@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.7.2/simplepeer.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+
+    <!-- <link
+      href="materialize.css"
+      type="text/css"
+      rel="stylesheet"
+      media="screen,projection"
+    />
+    
+    <script src="simplepeer.min.js"></script>
+    <script src="jquery.js"></script> -->
+    <title>Video</title>
+  </head>
+  <body>
+    <div class="container">
+      <center>
+        <div class="row">
+          <div class="col s3"></div>
+          <div class="col s6" id="call">
+            <h1>Seja bem vindo <%= user.name %></h1>
+            <a href="/" id="xau" style="display: none;">TCHAU</a>
+          </div>
+
+          <div class="col s3"></div>
+        </div>
+        <div id="videoStream">
+          <video
+            id="userAtendent"
+            style="background-color: aqua; width: 300px; height: 300px;"
+          ></video>
+          <i class="material-icons">camera_front</i>
+
+          <video
+            class="videoUser"
+            id="videoUser"
+            style="background-color: aqua; width: 300px; height: 300px;"
+          ></video>
+          <br />
+          <button class="btn" id="end">Finalizar</button>
+        </div>
+      </center>
+    </div>
+    <script>
+      $().ready(function () {
+        //VIDEO
+        // navigator.mediaDevices
+        //   .getUserMedia({
+        //     audio: false,
+        //     video: true,
+        //   })
+        //   .then((stream) => {
+        //     playVideo(stream, "userAtendent");
+        //   })
+        //   .catch((err) => console.log(err));
+        //CLICKS
+
+        $("#end").click(function () {
+          $("#videoStream").hide("slow");
+          $("#xau").show("slow");
+        });
+      });
+
+      // function playVideo(stream, idVideo) {
+      //   const video = document.getElementById(idVideo);
+      //   video.srcObject = stream;
+      //   video.onloadedmetadata = function () {
+      //     video.play();
+      //   };
+      // }
+
+      var peer1 = new SimplePeer({ initiator: true });
+      var peer2 = new SimplePeer();
+      peer1.on("signal", (data) => {
+        peer2.signal(data);
+      });
+
+      peer2.on("signal", (data) => {
+        peer1.signal(data);
+      });
+
+      peer2.on("stream", (stream) => {
+        // got remote video stream, now let's show it in a video tag
+        var video = document.querySelector("#userAtendent");
+
+        if ("srcObject" in video) {
+          video.srcObject = stream;
+        } else {
+          video.src = window.URL.createObjectURL(stream); // for older browsers
+        }
+
+        video.play();
+      });
+      peer1.on("stream", (stream) => {
+        // got remote video stream, now let's show it in a video tag
+        var video = document.querySelector("#videoUser");
+
+        if ("srcObject" in video) {
+          video.srcObject = stream;
+        } else {
+          video.src = window.URL.createObjectURL(stream); // for older browsers
+        }
+
+        video.play();
+      });
+
+      function addMedia(stream) {
+        peer1.addStream(stream); // <- add streams to peer dynamically
+        peer2.addStream(stream); // <- add streams to peer dynamically
+      }
+
+      // then, anytime later...
+      console.log(navigator.mediaDevices);
+      navigator.mediaDevices
+        .getUserMedia({
+          video: true,
+          audio: true,
+        })
+        .then(addMedia)
+        .catch(() => {});
+    </script>
+  </body>
+</html>
